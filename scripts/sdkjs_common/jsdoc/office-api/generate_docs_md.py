@@ -579,7 +579,7 @@ def process_doclets(data, output_dir, editor_name):
 def generate(output_dir, translations_file):
     global translations
     
-    if os.path.exists(translations_file):
+    if translations_file is not None and os.path.exists(translations_file):
         translations = load_json(translations_file)
     else:
         translations = {}
@@ -602,22 +602,20 @@ def generate(output_dir, translations_file):
         used_enumerations.clear()
         process_doclets(data, output_dir, editor_name)
     
-    target_dir = os.path.dirname(translations_file)
-    
-    translations_keys = translations.keys()
-    if len(translations_keys) != 0:
+    if translations_file is not None:
+        target_dir = os.path.dirname(translations_file)
+        
         missed_file_path = os.path.join(target_dir, "missed_translations.json")
         print(f'Saving missed translations to: {missed_file_path}')
         with open(missed_file_path, 'w', encoding='utf-8') as f:
             json.dump(missed_translations, f, ensure_ascii=False, indent=4)
-        
-    unused_keys = set(translations_keys) - set(used_translations_keys.keys())
-    if len(unused_keys) != 0:
+
+        unused_keys = set(translations.keys()) - set(used_translations_keys.keys())
         unused_data = {k: translations[k] for k in unused_keys}
         unused_file_path = os.path.join(target_dir, "unused_translations.json")
         print(f'Saving unused translations to: {unused_file_path}')
         with open(unused_file_path, 'w', encoding='utf-8') as f:
-            json.dump(unused_data, f, ensure_ascii=False, indent=4)
+            json.dump(unused_data, f, ensure_ascii=False, indent=4)   
 
     shutil.rmtree(output_dir + 'tmp_json')
     print('Done')
