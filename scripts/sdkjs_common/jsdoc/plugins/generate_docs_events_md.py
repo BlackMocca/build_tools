@@ -22,6 +22,7 @@ root = os.path.abspath(os.path.join(os.path.dirname(script_path), '../../../../.
 missing_examples = []
 used_enumerations = set()
 translations = {}
+translations_lang = None
 missed_translations = {}
 used_translations_keys = {}
 
@@ -94,10 +95,15 @@ def process_link_tags(text, root=''):
     otherwise, a link to a class method is created.
     For a method, if an alias is not specified, the name is left in the format 'Class#Method'.
     """
+    
+    lang_path = ""
+    if translations_lang is not None:
+        lang_path = f"{translations_lang}/"
+        
     reserved_links = {
-        '/docbuilder/global#ShapeType': f"{'../../../../../../' if root == '' else '../../../../../' if root == '../' else root}docs/office-api/usage-api/text-document-api/Enumeration/ShapeType.md",
-        '/plugin/config': 'https://api.onlyoffice.com/docs/plugin-and-macros/structure/configuration/',
-        '/docbuilder/basic': 'https://api.onlyoffice.com/docs/office-api/usage-api/text-document-api/'
+        '/docbuilder/global#ShapeType': f"{'../../../../../../' if root == '' else '../../../../../' if root == '../' else root}{lang_path}docs/office-api/usage-api/text-document-api/Enumeration/ShapeType.md",
+        '/plugin/config': f'https://api.onlyoffice.com/{lang_path}docs/plugin-and-macros/structure/configuration/',
+        '/docbuilder/basic': f'https://api.onlyoffice.com/{lang_path}docs/office-api/usage-api/text-document-api/'
     }
 
     def replace_link(match):
@@ -113,7 +119,7 @@ def process_link_tags(text, root=''):
                 display_text = label if label else ref
                 return f"[{display_text}]({url})"
             elif ref.startswith('/docs/plugins/'):
-                url = f"../../{ref.split('/docs/plugins/')[1]}.md"
+                url = f"../../{ref.split(f'{lang_path}/docs/plugins/')[1]}.md"
                 display_text = label if label else ref
                 return f"[{display_text}]({url})"
             else:
@@ -395,9 +401,11 @@ def process_events(data, editor_dir):
 
 def generate_events(output_dir, translations_file):
     global translations
+    global translations_lang
     
     if translations_file is not None and os.path.exists(translations_file):
         translations = load_json(translations_file)
+        translations_lang = os.path.splitext(os.path.basename(translations_file))[0]
     else:
         translations = {}
 
