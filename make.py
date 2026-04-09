@@ -99,7 +99,9 @@ build_sln.make()
 build_js.make()
 
 #server
-build_server.make()
+if not base.get_env("OO_SKIP_SERVER"):
+  build_server.make()
 
 # deploy
-deploy.make()
+if not base.get_env("OO_SKIP_SERVER"):
+  deploy.make()
